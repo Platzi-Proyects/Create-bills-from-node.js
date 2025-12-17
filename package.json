@@ -17,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/Platzi-Proyects/Careate-bills-from-node.js/issues"
   },
-  "homepage": "https://github.com/Platzi-Proyects/Create-bills-from-node.js#readme"
+  "homepage": "https://github.com/Platzi-Proyects/Create-bills-from-node.js#readme",
+  "dependencies": {
+    "pdfkit": "^0.17.2",
+    "pdfkit-table": "^0.1.99",
+    "puppeteer": "^24.33.0"
+  }
 }
