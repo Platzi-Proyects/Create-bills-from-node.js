@@ -1,22 +1,101 @@
-import puppeteer from 'puppeteer';
+// server.mjs
+import fs from 'fs';
+import http from 'http';
 
-async function htmlToPdf() {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  
+// ───── DATOS ─────
+let bill = {
+  productos: [],
+  precios: []
+};
+
+let step = 0;
+let tempProduct = '';
+
+// ───── CONSOLA ─────
+console.log('Producto:');
+
+process.stdin.on('data', (data) => {
+  const input = data.toString().trim().toLowerCase();
+
+  // PASO 0 → producto
+  if (step === 0) {
+    tempProduct = input;
+    console.log('Precio:');
+    step = 1;
+    return;
+  }
+
+  // PASO 1 → precio
+  if (step === 1) {
+    bill.productos.push(tempProduct);
+    bill.precios.push(Number(input));
+    console.log('¿Otro producto? (si / no)');
+    step = 2;
+    return;
+  }
+
+  // PASO 2 → continuar o terminar
+  if (step === 2) {
+    if (input === 'si') {
+      console.log('Producto:');
+      step = 0;
+    } else {
+      generarHTML();
+      process.stdin.pause();
+    }
+  }
+});
+
+// ───── GENERAR HTML ─────
+function generarHTML() {
+  let items = '';
+
+  for (let i = 0; i < bill.productos.length; i++) {
+    items += `
+      <li>
+        ${bill.productos[i]} - $${bill.precios[i]}
+      </li>
+    `;
+  }
+
   const html = `
-    <h1>Hola mundo</h1>
-    <table border="1">
-      <tr><th>Nombre</th><th>Edad</th></tr>
-      <tr><td>Juan</td><td>25</td></tr>
-    </table>
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Factura</title>
+    </head>
+    <body>
+      <h1>Factura</h1>
+      <ul>
+        ${items}
+      </ul>
+    </body>
+  </html>
   `;
-  
-  await page.setContent(html);
-  await page.pdf({ path: 'tabla.pdf', format: 'A4' });
-  
-  await browser.close();
-  console.log('PDF creado con Puppeteer');
+
+  fs.writeFileSync('factura.html', html);
+  console.log('Factura generada: factura.html');
 }
 
-htmlToPdf();
+// ───── SERVER ─────
+const server = http.createServer((req, res) => {
+  if (req.url === '/') {
+    const html = fs.readFileSync('factura.html');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+  } else {
+    res.writeHead(404);
+    res.end('Not found');
+  }
+});
+
+server.listen(3005, () => {
+  console.log('Server running → http://localhost:3005');
+});
+
+// ───── EXIT ─────
+process.on('exit', () => {
+  console.log('Programa terminado');
+});
+
