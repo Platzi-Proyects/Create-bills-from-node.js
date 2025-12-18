@@ -9,7 +9,6 @@ let bill = {
 };
 
 let step = 0;
-let tempProduct = '';
 
 // ───── CONSOLA ─────
 console.log('Producto:');
@@ -19,15 +18,14 @@ process.stdin.on('data', (data) => {
 
   // PASO 0 → producto
   if (step === 0) {
-    tempProduct = input;
     console.log('Precio:');
+    bill.productos.push(input);
     step = 1;
     return;
   }
 
   // PASO 1 → precio
   if (step === 1) {
-    bill.productos.push(tempProduct);
     bill.precios.push(Number(input));
     console.log('¿Otro producto? (si / no)');
     step = 2;
